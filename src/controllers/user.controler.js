@@ -23,7 +23,7 @@ const registerUser = asyncHandler(  async(req,res) =>{
 
 
 
-    const {fullName, email,userName, password} = req.body
+    const {fullName, email,username, password} = req.body
     console.log("email: ",email);
     console.log("password: ",password);
 
@@ -36,7 +36,7 @@ const registerUser = asyncHandler(  async(req,res) =>{
     const existedUser =  User.findOne({
         $or: 
           [  { email: email },
-            { userName: userName } ]
+            { username: username } ]
          })
  
          if(existedUser){
