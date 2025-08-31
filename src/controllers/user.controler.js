@@ -23,12 +23,12 @@ const registerUser = asyncHandler(  async(req,res) =>{
 
 
 
-    const {fullName, email,username, password} = req.body
+    const {fullname, email,username, password} = req.body
     console.log("email: ",email);
     console.log("password: ",password);
 
     if(
-        [fullName,email,username,password].some((field) => field?.trim()===" ")    // array is used to check all the at the once
+        [fullname,email,username,password].some((field) => field?.trim()===" ")    // array is used to check all the at the once
     )
        
        {  throw new ApiError("Full name is required", 400);   }
@@ -61,7 +61,7 @@ const coverImageLocalPath = req.files?.coverImage[0]?.path      // this is used 
        }
 
       const user =await User.create({
-           fullName,
+           fullname,
            avatar: avatar.url,
            coverImage: coverImage?.url || "",
            email,
