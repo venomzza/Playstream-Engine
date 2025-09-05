@@ -26,12 +26,14 @@ const registerUser = asyncHandler(  async(req,res) =>{
     const {fullname, email,username, password} = req.body
     console.log("email: ",email);
     console.log("password: ",password);
+    // console.log("avatar: ",avatar.url);
+    // console.log("cover image: ",coverImage.url);
 
     if(
         [fullname,email,username,password].some((field) => field?.trim()===" ")    // array is used to check all the at the once
     )
        
-       {  throw new ApiError("Full name is required", 400);   }
+       {  throw new ApiError("Full name is required", 405);   }
 
     const existedUser =  await User.findOne({
         $or: 
@@ -54,10 +56,10 @@ const coverImageLocalPath = req.files?.coverImage[0]?.path      // this is used 
        const coverImage = await uploadOnCloudinary(coverImageLocalPath)
 
        if(!coverImage){
-           throw new ApiError("Cover image is required", 400);
+           throw new ApiError("Cover image is required", 401);
        }
        if(!avatar){
-        throw new ApiError("Avatar is required", 400);
+        throw new ApiError("Avatar is required", 402);
        }
 
       const user =await User.create({
@@ -82,5 +84,6 @@ const coverImageLocalPath = req.files?.coverImage[0]?.path      // this is used 
     )
 
 })
+
 
 export { registerUser };
