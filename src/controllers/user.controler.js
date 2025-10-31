@@ -4,6 +4,24 @@ import { User } from "../models/user.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"  
 import {ApiResponse} from "../utils/ApiResponse.js"
 
+const generateAccessAndRefreshToken = async(userId) => {
+
+    try{
+        const user = await User.findById(userId)
+        const accessToken = user.generateAccessToken()
+        const refreshToken = user.generateRefreshToken()
+
+        user.refreshToken = refreshToken
+        await user.save({ validateBeforeSave: false })  // we are using validateBeforeSave false because we dont want to validate all the fields again while saving refresh token
+        return { accessToken, refreshToken }
+
+    } catch(error){
+        throw new ApiError(500,"Error in generating tokens")
+
+
+
+
+
 const registerUser = asyncHandler(  async(req,res) =>{
     // res.status(200).json({
     //     message: "User registered successfully !", })
@@ -42,7 +60,7 @@ const registerUser = asyncHandler(  async(req,res) =>{
          })
  
          if(existedUser){
-            throw new ApiError("User already exist with this email or username", 409);
+            throw new ApiError(409,"User already exist with this email or username");
          }
 
 const avatarLocalPath = req.files?.avatar[0]?.path              // this is used to check the local path of the avatar
@@ -85,5 +103,56 @@ const coverImageLocalPath = req.files?.coverImage[0]?.path      // this is used 
 
 })
 
+const loginUser = asyncHandler( async (req,res) => {
+//req body -> data
+// email or username
+// find user
+// check password 
+// generate access token and refresh token
+//sendcookie
 
-export { registerUser };
+const {email,username,password} = req.body
+
+if( !username || !email){
+    throw new ApiError(400, "username or email is required");
+}
+
+
+const user = await User.findOne({
+    $or: [{username}, {email}]
+})
+
+if(!user){
+    throw new ApiError(404, "User not found");
+}
+
+
+const isPasswordValid = await user.ispasswordCorrect(password)
+
+if(!isPasswordValid){
+    throw new ApiError(404, "Invalid credentials");
+}
+
+const {accessToken, refreshToken} = await generateAccessAndRefreshToken(user._id)
+
+const logedInUser = await User.findById(user._id).select(
+    "-password -refreshToken"     // yaha select ke andar - lga ke jo likhenge wo exclude hoga.
+)
+
+const options = {
+    httpOnly: true,  //now the cookie cannot be accessed via client side script it can be modified by server side only 
+    secure: true,
+}
+  return res
+  .status(200)
+  .cookie("accessToken", accessToken, options)
+  .cookie("refreshToken", refreshToken, options)
+  .json(
+    new ApiResponse(200, "User logged in successfully", {
+        user: logedInUser,
+        accessToken,
+        refreshToken
+    })
+  )
+})
+export { registerUser, loginUser };

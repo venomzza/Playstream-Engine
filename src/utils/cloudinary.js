@@ -1,5 +1,5 @@
 import {v2 as cloudinary} from "cloudinary"
-import fs from "fs"
+import fs from "fs"     //fs: Node’s built-in file system module — used to delete local files after upload
 
 
 cloudinary.config({ 
