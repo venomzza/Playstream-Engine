@@ -1,7 +1,6 @@
 import mongoose, {Schema} from "mongoose";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-
+import jwt from "jsonwebtoken"
+import bcrypt from "bcrypt"
 
 const userSchema = new Schema(
     {
@@ -10,83 +9,77 @@ const userSchema = new Schema(
             required: true,
             unique: true,
             lowercase: true,
-            trim : true,
-            index:true
+            trim: true, 
+            index: true
         },
-
-         email: {
+        email: {
             type: String,
             required: true,
             unique: true,
-            lowercase: true,
-            trim : true,
+            lowecase: true,
+            trim: true, 
         },
-
-         fullname: {
+        fullName: {
             type: String,
             required: true,
-            
-            trim : true,
-            index:true
+            trim: true, 
+            index: true
         },
-
-         avatar: {
-            type: String,    //cloudinary url
+        avatar: {
+            type: String, // cloudinary url
             required: true,
         },
+        coverImage: {
+            type: String, // cloudinary url
+        },
+        watchHistory: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: "Video"
+            }
+        ],
+        password: {
+            type: String,
+            required: [true, 'Password is required']
+        },
+        refreshToken: {
+            type: String
+        }
 
-
-        watchhistory: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Video"
-          },
-
-          password: {
-              type: String,
-              required: [true,'password is required']
-          },
-
-          refreshToken: {
-              type: String,
-          },
-          
-
- },
-
-   
-          {  timestamps: true  }// automatically adds createdAt and updatedAt fields
-          
-
+    },
+    {
+        timestamps: true  // Automatically adds createdAt and updatedAt fields
+    }
 )
 
 userSchema.pre("save", async function (next) {
     if(!this.isModified("password")) return next();
-    
-    this.password = await bcrypt.hash(this.password,10)
-    next()
-}) // Hash password before saving
 
-userSchema.methods.ispasswordCorrect= async  function (password) {
+    this.password = await bcrypt.hash(this.password, 10)
+    next() // Hash password before saving
+
+})
+
+userSchema.methods.isPasswordCorrect = async function(password){
     return await bcrypt.compare(password, this.password)
-}    //function used to check if password is correct or not
+} //function used to check if password is correct or not
 
-userSchema.methods.generateAccessToken = function () {              //used JWT for tokenisation
-    jwt.sign({
-        _id: this._id,
-        email: this.email,
-        username: this.username,
-        fullName: this.fullname
-    },
-    process.env.ACCESS_TOKEN_SECRET,
-    {
-        expiresIn: process.env.ACCESS_TOKEN_EXPIRY
-
-    }
-)
+userSchema.methods.generateAccessToken = function(){
+    return jwt.sign(
+        {
+            _id: this._id,
+            email: this.email,
+            username: this.username,
+            fullName: this.fullName
+        },
+        process.env.ACCESS_TOKEN_SECRET,
+        {
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY
+        }
+    )
 }
 
 // userSchema.methods.generateRefreshToken = function () {} 
-
 userSchema.methods.generateRefreshToken = function(){
     return jwt.sign(
         {
@@ -100,4 +93,4 @@ userSchema.methods.generateRefreshToken = function(){
     )
 }
 
-    export const User = mongoose.model("User", userSchema);
+export const User = mongoose.model("User", userSchema)
