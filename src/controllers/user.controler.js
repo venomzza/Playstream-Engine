@@ -18,9 +18,9 @@ const generateAccessAndRefreshToken = async(userId) => {
     } catch(error){
         throw new ApiError(500,"Error in generating tokens")
 
+    }
 
-
-
+}
 
 const registerUser = asyncHandler(  async(req,res) =>{
     // res.status(200).json({
